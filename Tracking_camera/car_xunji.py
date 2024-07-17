@@ -1,15 +1,15 @@
 Threshold = (18, 61, 14, 89, -2, 63)
 RGB_Threshold = (96, 100, -13, 5, -11, 18)
 
-import sensor, image, time, ustruct, pyb
-from pyb import UART,LED
+import sensor, image, time, ustruct
+from pyb import UART, LED
 
 LED(1).on()
 LED(2).on()
 LED(3).on()
 
-uart = UART(3,115200)
-uart.init(115200, bits=8, parity=None, stop=1)
+uart = UART(3, 9600)
+uart.init(9600, bits=8, parity=None, stop=1)
 
 # 识别区域
 roi1 =     [(0, 17, 15, 25),        #  左  x y w h
@@ -49,7 +49,10 @@ while(True):
     img = sensor.snapshot().binary([Threshold])
     line = img.get_regression([(100,100)], robust = True)
 
-    left_flag,right_flag,up_flag=(0,0,0)
+    left_flag = 0
+    right_flag = 0
+    up_flag = 0
+            
     for rec in roi1:
             img.draw_rectangle(rec, color=(255,0,0))#绘制出roi区域
 
@@ -59,14 +62,16 @@ while(True):
             theta_err = line.theta()-180
         else:
             theta_err = line.theta()
-        #直角坐标调整
+                    
+        # 直角坐标调整
         img.draw_line(line.line(), color = 127)
-        #画出直线
+        # 画出直线
         #print(rho_err,line.magnitude(),rho_err)
+
+        # 为什么是大于8
         if line.magnitude()>8:
             outdata=[rho_err,theta_err,0]
             print(outdata)
-            outuart(rho_err,theta_err,0)
                     
             if img.find_blobs([RGB_Threshold],roi=roi1[0]):  #left
                 #print('left')
